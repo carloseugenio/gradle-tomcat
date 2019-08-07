@@ -12,11 +12,13 @@ plugins {
 
     // Apply the Groovy plugin to add support for Groovy
     id 'groovy'
+    id 'ivy-publish'
 }
 
+version = '0.1-SNAPSHOT'
+group = "br.net.carloseugenio.gradle"
+
 repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     jcenter()
 }
 
@@ -40,6 +42,30 @@ gradlePlugin {
 // Add a source set for the functional test suite
 sourceSets {
     functionalTest {
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+publishing {
+    repositories {
+        ivy {
+            name "IvyPublicationRepo"
+            url "file://opt/ivyRep"
+            layout "maven"
+        }
+    }
+    publications {
+        ivy(IvyPublication) {
+            from components.java
+            artifact(sourcesJar) {
+                type = 'sources'
+                conf = 'compile'
+            }
+        }
     }
 }
 
