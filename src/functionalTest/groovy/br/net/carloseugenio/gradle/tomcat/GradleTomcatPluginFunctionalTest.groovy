@@ -90,7 +90,7 @@ class GradleTomcatPluginFunctionalTest extends Specification {
         then:
         result.output.contains(SUCCESS)
         def buildDir = projectDir.toAbsolutePath().resolve("build" ).toFile()
-        buildDir.listFiles().find { it.name.contains("base1") } != null
+        assert buildDir.listFiles().find { it.name.contains("base1") } != null
         assert projectDir.toAbsolutePath().resolve("build/tomcatRuntime/lib.jar").toFile().exists()
     }
 
@@ -103,12 +103,15 @@ class GradleTomcatPluginFunctionalTest extends Specification {
                         withHeaders(new Header(CONTENT_TYPE.toString(), "text/plain")).
                         withBody("OK".getBytes("UTF-8"))
         )
-        new File(projectDir.toFile(), "functionalTest.xml") << """
+        def tomcatContextFile = new File(projectDir.toFile(), "functionalTest.xml") << """
             <Context docBase="${projectDir.toAbsolutePath()}" reloadable="false">
                 <Resources>
                     <PreResources base="${projectDir.toAbsolutePath()}/build/classes/java/main"
                           className="org.apache.catalina.webresources.DirResourceSet"
                           webAppMount="/WEB-INF/classes"/>
+                    <PreResources base="${projectDir.toAbsolutePath()}/build/classes/groovy/main"
+                          className="org.apache.catalina.webresources.DirResourceSet"
+                          webAppMount="/WEB-INF/classes"/>                          
                 </Resources>
             </Context>
         """
@@ -144,6 +147,19 @@ class GradleTomcatPluginFunctionalTest extends Specification {
         result.output.contains(SUCCESS) \
             && !result.output.contains("FAIL") \
             && result.output.contains("received: OK")
+
+        // Verify if base dirs described in tomcat context file were created
+        def srcDir = projectDir.toAbsolutePath().resolve("src").toFile()
+        assert srcDir.exists()
+        def mainWebApp = srcDir.toPath().resolve("main/webapp")
+        assert mainWebApp.toFile().exists()
+        def txt = tomcatContextFile.text
+        def preResources = new XmlParser().parseText(txt).Resources.PreResources
+        preResources.each {
+            def base = it.@'base'
+            assert new File(base).exists()
+        }
+
     }
 
     def "can run undeploy task"() {

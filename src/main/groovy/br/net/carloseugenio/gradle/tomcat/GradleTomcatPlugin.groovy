@@ -63,13 +63,7 @@ class GradleTomcatPlugin implements Plugin<Project> {
             group 'Gradle Tomcat'
             description 'Deploy (installs) the application into a running Tomcat server instance'
             doFirst {
-                if (extension.contextFile == null) {
-                    extension.contextFile = project.file("build/resources/generated/${project.name}.xml")
-                    println "ATTENTION, Tomcat context file not provided. Trying to use default: ${extension.contextFile}"
-                }
-                if (!extension.contextFile.exists()) {
-                    throw new IllegalArgumentException("The Tomcat context file [${extension.contextFile}] does not exists!")
-                }
+                verifyDirs()
                 builder.get({
                     request.uri.path = "/manager/text/deploy"
                     request.uri.query = [config: "file:${extension.contextFile.absolutePath}", path: "/${project.name}"]
@@ -81,6 +75,26 @@ class GradleTomcatPlugin implements Plugin<Project> {
                     }
                 })
             }
+        }
+    }
+
+    private void verifyDirs() {
+        if (extension.contextFile == null) {
+            extension.contextFile = project.file("build/resources/generated/${project.name}.xml")
+            println "ATTENTION, Tomcat context file not provided. Trying to use default: ${extension.contextFile}"
+        }
+        if (!extension.contextFile.exists()) {
+            throw new IllegalArgumentException("The Tomcat context file [${extension.contextFile}] does not exists!")
+        }
+        // The main tomcat web app dir must exist!
+        def srcDir = project.file("src")
+        def mainWebAppDir = srcDir.toPath().resolve("main/webapp").toFile()
+        mainWebAppDir.mkdirs()
+
+        def preResources = new XmlParser().parseText(extension.contextFile.text).Resources.PreResources
+        preResources.each {
+            def base = it.@'base'
+            new File(base).mkdirs()
         }
     }
 
