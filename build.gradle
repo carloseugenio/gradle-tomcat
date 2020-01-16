@@ -50,24 +50,7 @@ task sourcesJar(type: Jar) {
     archiveClassifier = 'sources'
 }
 
-publishing {
-    repositories {
-        ivy {
-            name "IvyPublicationRepo"
-            url "file://opt/ivyRep"
-            layout "maven"
-        }
-    }
-    publications {
-        ivy(IvyPublication) {
-            from components.java
-            artifact(sourcesJar) {
-                type = 'sources'
-                conf = 'compile'
-            }
-        }
-    }
-}
+
 
 gradlePlugin.testSourceSets(sourceSets.functionalTest)
 configurations.functionalTestImplementation.extendsFrom(configurations.testImplementation)
