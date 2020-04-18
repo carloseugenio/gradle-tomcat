@@ -71,7 +71,7 @@ class GradleTomcatPlugin implements Plugin<Project> {
                         println 'I received: ' + obj
                     }
                     response.exception { ex ->
-                        throw new IllegalStateException("Exception executing task [deploy]: ${ex}")
+                        throw new IllegalStateException("Exception executing task [deploy]: ${ex}", ex)
                     }
                 })
             }
