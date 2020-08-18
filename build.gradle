@@ -1,4 +1,4 @@
-plugins {
+    plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
 
@@ -7,7 +7,7 @@ plugins {
     id 'ivy-publish'
 }
 
-version = '0.1-SNAPSHOT'
+version = '0.2-SNAPSHOT'
 group = "br.net.carloseugenio.gradle"
 
 repositories {
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.3'
+    compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.4'
     // Use the awesome Spock testing and specification framework
     testImplementation 'org.spockframework:spock-core:1.2-groovy-2.5'
     testImplementation 'org.mock-server:mockserver-netty:5.6.1'
@@ -56,4 +56,14 @@ task functionalTest(type: Test) {
 check {
     // Run the functional tests as part of `check`
     dependsOn(tasks.functionalTest)
+}
+
+publishing {
+    repositories {
+        ivy {
+            name "IvyPublicationRepo"
+            url "file://opt/ivyRep"
+            layout "maven"
+        }
+    }
 }

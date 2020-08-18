@@ -41,6 +41,12 @@ class GradleTomcatPlugin implements Plugin<Project> {
         def builder = configure({
             request.uri = "http://${extension.server}:${extension.port}"
             request.auth.basic "${extension.user}", "${extension.password}"
+            // Manually generate Base 64 encoding of username and password
+            //String encodedAuthString = "Basic " + ("$extension.user:$extension.password".bytes.encodeBase64().toString())
+
+            // Set in the `HttpBuilder.configure` closure
+            //request.headers['Authorization'] = encodedAuthString
+            //throw new IllegalStateException("Generated Auth string: $encodedAuthString")
         })
 
         println "Builder created: $builder"
